@@ -2,6 +2,9 @@ package edu.wit.cs.comp3370;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Scanner;
 
 /* Calculates the minimal spanning tree of a graph 
@@ -16,11 +19,46 @@ public class LAB9 {
 	
 	// TODO document this method
 	public static void FindMST(Graph g) {
-		// TODO generate edges from graph vertices
-		
-		// TODO populate graph with MST edges
+		for (Vertex v : g.getVertices())
+			v.makeSet();
+		g.sortVertices();
+		ArrayList<Edge> edges = new ArrayList<Edge>();
+		for (Vertex x : g.getVertices()) {
+			for (Vertex y : g.getVertices()) {
+				if (x == y)
+					continue;
+				edges.add(new Edge(x, y, Math.sqrt(Math.pow(x.x - y.x, 2) + Math.pow(x.y - y.y, 2))));
+			}
+		}
+		Collections.sort(edges, new Comparator<Edge>() {
+			@Override
+			public int compare(Edge o1, Edge o2) {
+				return Double.compare(o1.cost, o2.cost);
+			}
+		});
+
+		for (Edge e : edges) {
+			if (e.src.findSet() != e.dst.findSet()) {
+				g.addEdge(e.src, e.dst);
+				union(e.src, e.dst);
+			}
+		}
 	}
+
 	
+	private static void union(Vertex u, Vertex v) {
+		Vertex x = u.findSet();
+		Vertex y = v.findSet();
+
+		if (x.rank > y.rank)
+			y.parent = x;
+		else {
+			x.parent = y;
+			if (x.rank == y.rank)
+				y.rank++;
+		}
+	}
+
 	/********************************************
 	 * 
 	 * You shouldn't modify anything past here
